@@ -31,63 +31,70 @@ void add_course(struct course c, FILE *fp){
 }
 
 
- void register_student(struct student s, FILE *fp){
-    printf("enter student name ");
-    getchar();
-    fgets(s.name,sizeof(s.name),stdin);
-    s.name[strcspn(s.name, "\n")] = '\0';
+void register_student(struct student s, FILE *fp)
+{
+    FILE *fc = fopen("course.txt","r");
+    if(fc == NULL){
+        printf("no course found, please add course first\n");
+        return;
+    }
 
-    printf("enter roll no");
-    scanf("%d",&s.roll_no);
-    getchar();
-
-    
-    printf("enter course");
-    fgets(s.course,sizeof(s.course),stdin);
-    s.course[strcspn(s.course, "\n")] = '\0';
-
-    
-    FILE *fc=fopen("course.txt","r");
-    
     int cid;
     char cname[20];
-    int found=0;
+    int found = 0;
 
-    while(fscanf(fc,"%d %s",&cid,cname) !=EOF){
-        if(strcmp(cname,s.course)==0){
-            found=1;
+    printf("enter student name: ");
+    fgets(s.name, sizeof(s.name), stdin);
+    s.name[strcspn(s.name, "\n")] = '\0';
+
+    printf("enter roll no: ");
+    scanf("%d", &s.roll_no);
+    getchar();
+
+    printf("enter course: ");
+    fgets(s.course, sizeof(s.course), stdin);
+    s.course[strcspn(s.course, "\n")] = '\0';
+
+    // course validation
+    while (fscanf(fc, "%d %s", &cid, cname) != EOF) {
+        if (strcmp(cname, s.course) == 0) {
+            found = 1;
             break;
         }
     }
     fclose(fc);
 
-    if(!found){
-        printf("\n course not found please add course first\n");
+    if (!found) {
+        printf("course not found, please add course first\n");
         return;
     }
 
-    fprintf(fp,"%s %d %s\n",s.name,s.roll_no,s.course);
-
-    printf("student register successful\n");
- }
-
+    fprintf(fp, "%s|%d|%s\n", s.name, s.roll_no, s.course);
+    printf("student registered successfully\n");
+}
 
 
- void view_registrations() {
+void view_registrations() {
     FILE *fp = fopen("student.txt", "r");
     if (fp == NULL) {
-        printf("❌ No students registered yet.\n");
+        printf(" No students registered.\n");
         return;
     }
 
     struct student s;
 
     printf("\n==== All Registrations ====\n");
-    while (fscanf(fp, "%s %d %s", s.name, &s.roll_no, s.course) != EOF) {
-        printf("\nName: %s\nRoll No: %d\nCourse: %s\n", s.name, s.roll_no, s.course);
-    }
+    while (fscanf(fp, " %[^|]|%d|%[^\n]",
+              s.name, &s.roll_no, s.course) == 3) {
+
+    printf("\nName: %s\nRoll No: %d\nCourse: %s\n",
+           s.name, s.roll_no, s.course);
+}
+
     fclose(fp);
 }
+
+ 
 
 void delete_course(){
     FILE *fc=fopen("course.txt","r");
@@ -103,8 +110,8 @@ void delete_course(){
     char del_course[20];
     int found=0;
 
-    printf("enter course name to delete");
     getchar();
+    printf("enter course name to delete");
     fgets(del_course, sizeof(del_course),stdin);
     del_course[strcspn(del_course, "\n")]= '\0';
 
@@ -138,6 +145,7 @@ int main(){
     
     struct course c;
     struct student s;
+    int choice;
 
     while(1){
 
@@ -148,20 +156,21 @@ int main(){
         printf("enter 4 to delete course\n");
         printf("enter 5 to exit\n");
 
-        int choice;
+        
         printf("enter your choice");
         scanf("%d",&choice);
-        
+        getchar();
         switch(choice){
             
+            
             case 1:
-            fp= fopen("course.txt","a+");
+            fp= fopen("course.txt","a");
             add_course(c, fp);
             fclose(fp);
             break;
 
             case 2:
-            fp= fopen("student.txt","a+");
+            fp= fopen("student.txt","a");
             register_student(s,fp);
             fclose(fp);
             break;
@@ -177,7 +186,7 @@ int main(){
 
 
             case 5:
-            printf("exit program successfull");
+            printf("exit program successfull \n");
             exit(0);
 
 
@@ -189,5 +198,5 @@ int main(){
     }
 
    
-    return 0;
+   
 }
